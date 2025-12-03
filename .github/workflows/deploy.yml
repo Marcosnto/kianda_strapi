@@ -52,10 +52,7 @@ jobs:
               --exclude='node_modules/.cache' \
               -czvf deploy.tar.gz \
               dist/ \
-              config/ \
-              database/ \
               public/ \
-              src/ \
               package.json \
               package-lock.json \
               favicon.png

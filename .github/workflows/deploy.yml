@@ -1,0 +1,110 @@
+name: Deploy Strapi to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout do código
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Configurar Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # 3. Instalar dependências
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Build de produção
+      - name: Build Strapi
+        run: NODE_ENV=production npm run build
+
+      # 5. Remover devDependencies para deploy
+      - name: Remove devDependencies
+        run: npm prune --production
+
+      # 6. Compactar arquivos para deploy
+      - name: Create deployment package
+        run: |
+          tar --exclude='.git' \
+              --exclude='.github' \
+              --exclude='.env' \
+              --exclude='.env.*' \
+              --exclude='node_modules/.cache' \
+              -czvf deploy.tar.gz \
+              dist/ \
+              config/ \
+              database/ \
+              public/ \
+              src/ \
+              package.json \
+              package-lock.json \
+              favicon.png
+
+      # 7. Enviar para EC2 via SCP
+      - name: Copy to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "deploy.tar.gz"
+          target: "/home/ubuntu/"
+
+      # 8. Executar deploy no servidor
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            echo "🚀 Iniciando deploy..."
+
+            # Parar aplicação atual
+            pm2 stop strapi || true
+
+            # Fazer backup do .env
+            cp /home/ubuntu/strapi/.env /home/ubuntu/.env.backup || true
+
+            # Limpar pasta antiga (mantendo node_modules)
+            cd /home/ubuntu/strapi
+            find . -maxdepth 1 ! -name 'node_modules' ! -name '.env' ! -name '.' -exec rm -rf {} +
+
+            # Extrair novos arquivos
+            tar -xzvf /home/ubuntu/deploy.tar.gz -C /home/ubuntu/strapi
+
+            # Restaurar .env
+            cp /home/ubuntu/.env.backup /home/ubuntu/strapi/.env || true
+
+            # Remover arquivo compactado
+            rm /home/ubuntu/deploy.tar.gz
+
+            # Instalar dependências de produção
+            cd /home/ubuntu/strapi
+            npm install --omit=dev
+
+            # Reinstalar sharp para Linux
+            npm uninstall sharp
+            npm install sharp
+
+            # Reiniciar aplicação
+            pm2 restart strapi || pm2 start npm --name "strapi" -- start
+
+            # Salvar estado do PM2
+            pm2 save
+
+            echo "✅ Deploy concluído!"

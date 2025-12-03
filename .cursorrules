@@ -1,0 +1,92 @@
+Você é um especialista em NodeJS utilizando o Strapi.
+
+Esse strapi irá servir dados para uma outra aplicação desenvolvida em React utilizando o NextJS.
+
+## Informações do Projeto
+
+- **Strapi Version**: 5.29.0
+- **Node.js**: 20.x LTS
+- **Banco de Dados**: MySQL (mysql2)
+- **Domínio**: kiandadiversidade.com
+- **URL do CMS**: https://cms.kiandadiversidade.com
+
+## Infraestrutura
+
+### AWS EC2
+
+- **Tipo de Instância**: t3.small (2GB RAM)
+- **Sistema Operacional**: Ubuntu 22.04 LTS
+- **Região**: sa-east-1 (São Paulo)
+- **Elastic IP**: Configurado para IP fixo
+- **Security Group**: strapi-sg (portas 22, 80, 443)
+
+### Hostinger
+
+- **Banco de Dados**: MySQL hospedado na Hostinger
+- **DNS**: Registro A apontando cms.kiandadiversidade.com para o Elastic IP da EC2
+
+### Servidor
+
+- **Process Manager**: PM2 (mantém aplicação rodando em background)
+- **Web Server**: Nginx (proxy reverso na porta 80/443)
+- **SSL**: Let's Encrypt via Certbot (renovação automática)
+- **Diretório da Aplicação**: /home/ubuntu/strapi
+
+## CI/CD - GitHub Actions
+
+O build é feito no GitHub Actions (mais memória disponível) e depois copiado para a EC2.
+
+**Fluxo de Deploy:**
+
+1. Push para branch `main`
+2. GitHub Actions: npm install + npm run build
+3. Compacta arquivos (deploy.tar.gz)
+4. Envia via SCP para EC2
+5. No servidor: extrai, reinstala sharp, reinicia PM2
+
+**Secrets necessários no GitHub:**
+
+- `EC2_HOST`: Elastic IP da instância
+- `EC2_SSH_KEY`: Chave privada SSH (.pem)
+
+## Comandos Úteis no Servidor
+
+```bash
+# Conectar via SSH
+ssh -i strapi-ec2-key.pem ubuntu@<ELASTIC_IP>
+
+# PM2
+pm2 status                 # Ver status
+pm2 logs strapi            # Ver logs
+pm2 restart strapi         # Reiniciar
+pm2 stop strapi            # Parar
+
+# Nginx
+sudo systemctl status nginx
+sudo systemctl restart nginx
+sudo nginx -t              # Testar configuração
+
+# Ver uso de memória
+free -h
+```
+
+## Observações Importantes
+
+1. **Build Local Necessário**: A t3.micro não tem memória suficiente para fazer build do Strapi 5. O build deve ser feito no GitHub Actions ou localmente.
+
+2. **Sharp**: O pacote sharp precisa ser reinstalado no servidor após deploy, pois é compilado para o sistema operacional específico.
+
+3. **Swap**: O servidor tem 2GB de swap configurado para ajudar com memória.
+
+4. **Arquivos macOS**: Ao fazer tar no Mac, usar `COPYFILE_DISABLE=1` para evitar arquivos `._*`.
+
+## Variáveis de Ambiente (.env)
+
+O arquivo .env no servidor contém:
+
+- Configurações do servidor (HOST, PORT)
+- Credenciais do banco MySQL (Hostinger)
+- Chaves de segurança (APP_KEYS, JWT_SECRET, etc.)
+- URL pública do Strapi
+
+**NUNCA commitar o .env no repositório!**

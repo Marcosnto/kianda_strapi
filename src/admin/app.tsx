@@ -52,6 +52,22 @@ export default {
         "app.components.LeftMenu.navbrand.workplace": "Painel Admin",
         "Auth.form.welcome.title": "Kianda CMS",
         "Auth.form.welcome.subtitle": "Faça login para continuar",
+
+        // Traduções de status Draft/Published
+        "content-manager.components.DraftBadge.label": "Rascunho",
+        "content-manager.components.PublishedBadge.label": "Publicado",
+        "content-manager.popover.draft.title": "Rascunho",
+        "content-manager.popover.published.title": "Publicado",
+        "content-manager.containers.edit.panels.publish.header": "Publicação",
+        "content-manager.components.EditViewDataManagerProvider.draft":
+          "Rascunho",
+        "content-manager.components.EditViewDataManagerProvider.published":
+          "Publicado",
+
+        // Botões de ação
+        "content-manager.components.DraftBadge.unpublish": "Despublicar",
+        "content-manager.containers.Edit.publish": "Publicar",
+        "content-manager.containers.Edit.save": "Salvar",
       },
     },
   },

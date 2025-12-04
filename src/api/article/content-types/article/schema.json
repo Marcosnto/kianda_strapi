@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "articles",
+  "info": {
+    "singularName": "article",
+    "pluralName": "articles",
+    "displayName": "Artigos"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Titulo": {
+      "type": "string",
+      "required": true
+    },
+    "Slug": {
+      "type": "uid",
+      "targetField": "Titulo"
+    },
+    "categoria": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category",
+      "inversedBy": "artigos"
+    },
+    "Resumo": {
+      "type": "text"
+    },
+    "ImagemDeCapa": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "Publicado": {
+      "type": "boolean",
+      "default": false
+    },
+    "DataDePublicacao": {
+      "type": "date"
+    },
+    "Conteudo": {
+      "type": "richtext",
+      "required": true
+    }
+  }
+}

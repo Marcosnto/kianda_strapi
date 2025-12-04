@@ -47,7 +47,6 @@
     "@strapi/content-type-builder": "5.29.0",
     "@strapi/upload": "5.29.0",
     "@strapi/content-manager": "5.29.0",
-    "@strapi/database": "5.29.0",
     "@strapi/core": "5.29.0"
   }
 }

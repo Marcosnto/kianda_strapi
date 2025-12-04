@@ -20,7 +20,9 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.js",
-    "src/**/*.json"
+    "src/**/*.json",
+    "config/**/*.ts",
+    "config/**/*.js"
   ],
   "exclude": [
     "node_modules/",

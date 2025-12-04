@@ -16,6 +16,7 @@
     "ci:local": "rm -rf node_modules && rm -f package-lock.json && npm install && npm run build"
   },
   "dependencies": {
+    "@strapi/database": "^5.29.0",
     "@strapi/plugin-cloud": "5.29.0",
     "@strapi/plugin-users-permissions": "5.29.0",
     "@strapi/provider-email-nodemailer": "5.29.0",
